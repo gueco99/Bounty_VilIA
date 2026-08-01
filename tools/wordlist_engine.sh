@@ -80,9 +80,15 @@ if [ ${#MISSING[@]} -gt 0 ]; then
     exit 1
 fi
 
-# Resolve hashcat rules dir (brew install layout)
+# Resolve hashcat rules dir (brew install layout on macOS, apt layout on Linux)
 HASHCAT_PREFIX="$(brew --prefix hashcat 2>/dev/null || true)"
-HASHCAT_RULES_DIR="${HASHCAT_PREFIX}/share/doc/hashcat/rules"
+if [ -n "$HASHCAT_PREFIX" ] && [ -d "${HASHCAT_PREFIX}/share/doc/hashcat/rules" ]; then
+    HASHCAT_RULES_DIR="${HASHCAT_PREFIX}/share/doc/hashcat/rules"
+elif [ -d "/usr/share/hashcat/rules" ]; then
+    HASHCAT_RULES_DIR="/usr/share/hashcat/rules"
+else
+    HASHCAT_RULES_DIR="${HASHCAT_PREFIX}/share/doc/hashcat/rules"
+fi
 EXT_DIR="${HOME}/.local/share/bug-bounty/credential-attack"
 
 case "$MODE" in

@@ -376,6 +376,7 @@ if command -v katana &>/dev/null && [ -s "$RECON_DIR/live/urls.txt" ]; then
         -list "$RECON_DIR/urls/katana_targets.txt" \
         -d 3 -jc -kf all -silent \
         -c 50 -p 20 \
+        -rl "$RATE_LIMIT" \
         ${BB_AUTH_ARGS[@]+"${BB_AUTH_ARGS[@]}"} \
         -o "$RECON_DIR/urls/katana.txt" 2>/dev/null || true
     log_done "katana: $(wc -l < "$RECON_DIR/urls/katana.txt" 2>/dev/null || echo 0) URLs"

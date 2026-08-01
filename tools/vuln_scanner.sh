@@ -65,6 +65,11 @@ BASE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 . "$SCRIPT_DIR/_auth_helper.sh"
 bb_auth_active && bb_auth_banner
 
+# Rate limiting — same BB_RATE_LIMIT contract as recon_engine.sh, so a program
+# with a strict req/s cap only needs to export it once for the whole pipeline.
+RATE_LIMIT="${BB_RATE_LIMIT:-150}"
+NUC_RATE_LIMIT="${NUC_RATE_LIMIT:-300}"
+
 # macOS compatibility: GNU timeout may not exist
 if ! command -v timeout &>/dev/null; then
     if command -v gtimeout &>/dev/null; then
@@ -247,7 +252,7 @@ if ! skip_has sqli; then
     # 2a. Nuclei
     if tool_ok nuclei; then
         log_step "nuclei SQLi templates..."
-        nuclei -l "$ORDERED_SCAN" -tags sqli -severity medium,high,critical -silent ${BB_AUTH_ARGS[@]+"${BB_AUTH_ARGS[@]}"} -o "$FINDINGS_DIR/sqli/nuclei_sqli.txt" || true
+        nuclei -l "$ORDERED_SCAN" -tags sqli -severity medium,high,critical -rl "$NUC_RATE_LIMIT" -silent ${BB_AUTH_ARGS[@]+"${BB_AUTH_ARGS[@]}"} -o "$FINDINGS_DIR/sqli/nuclei_sqli.txt" || true
     fi
     # 2b. Manual Linear-Scaling Probes
     PARAMS_FILE="$RECON_DIR/urls/with_params.txt"
@@ -313,12 +318,20 @@ with open(sys.argv[1]) as fin, open(sys.argv[2], 'w') as fout:
 PYEOF
         ORIG_COUNT=$(wc -l < "$PARAMS_FILE" 2>/dev/null || echo 0)
         DEDUP_COUNT=$(wc -l < "$DAL_DEDUP_FILE" 2>/dev/null || echo 0)
-        log_step "Running dalfox on $DAL_LIMIT URLs (deduped $ORIG_COUNT -> $DEDUP_COUNT, timeout: ${DAL_MAX_TIME}s)..."
+        # Cap worker concurrency to the program's rate limit and add a
+        # per-request delay when that limit is low — with default
+        # RATE_LIMIT=150 this is a no-op (worker=20, delay=0, same as before).
+        DAL_WORKER=$(( RATE_LIMIT < 20 ? RATE_LIMIT : 20 ))
+        [ "$DAL_WORKER" -lt 1 ] && DAL_WORKER=1
+        DAL_DELAY=$(( RATE_LIMIT < 20 ? 1000 : 0 ))
+
+        log_step "Running dalfox on $DAL_LIMIT URLs (deduped $ORIG_COUNT -> $DEDUP_COUNT, worker=$DAL_WORKER, timeout: ${DAL_MAX_TIME}s)..."
         head -"$DAL_LIMIT" "$DAL_DEDUP_FILE" | \
             timeout "$DAL_MAX_TIME" dalfox pipe \
             --silence \
             --no-color \
-            --worker 20 \
+            --worker "$DAL_WORKER" \
+            --delay "$DAL_DELAY" \
             --timeout 10 \
             ${BB_AUTH_ARGS[@]+"${BB_AUTH_ARGS[@]}"} \
             --output "$FINDINGS_DIR/xss/dalfox_results.txt" 2>/dev/null || true

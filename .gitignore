@@ -12,6 +12,10 @@ config.json
 secrets.txt
 api_keys.txt
 .private/
+memory/secur0_session.json
+
+# VPN profiles / credentials (often embed certs and keys)
+*.ovpn
 
 # Nested local clones / sub-repos (not tracked)
 claude-bug-bounty/

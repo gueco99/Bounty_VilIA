@@ -41,11 +41,21 @@ AUDIT_REQUIRED = {"ts", "url", "method", "scope_check", "schema_version"}
 AUDIT_OPTIONAL = {"response_status", "finding_id", "session_id", "error"}
 AUDIT_ALL = AUDIT_REQUIRED | AUDIT_OPTIONAL
 
+PROGRAM_REQUIRED = {"platform", "handle", "first_seen", "schema_version"}
+PROGRAM_OPTIONAL = {"name", "url", "program_type", "has_cves"}
+PROGRAM_ALL = PROGRAM_REQUIRED | PROGRAM_OPTIONAL
+
+PENDING_SUBMISSION_REQUIRED = {"id", "target", "finding_title", "report_path", "created", "status", "schema_version"}
+PENDING_SUBMISSION_OPTIONAL = {"submitted_at", "notes"}
+PENDING_SUBMISSION_ALL = PENDING_SUBMISSION_REQUIRED | PENDING_SUBMISSION_OPTIONAL
+
 VALID_RESULTS = {"confirmed", "rejected", "partial", "informational"}
 VALID_SEVERITIES = {"critical", "high", "medium", "low", "informational", "none"}
 VALID_ACTIONS = {"hunt", "recon", "validate", "report", "remember", "resume", "intel"}
 VALID_METHODS = {"GET", "HEAD", "OPTIONS", "POST", "PUT", "PATCH", "DELETE"}
 VALID_SCOPE_CHECKS = {"pass", "fail", "skip"}
+VALID_PROGRAM_TYPES = {"VDP", "BBP"}
+VALID_PENDING_STATUSES = {"pending", "submitted", "dismissed"}
 
 
 class SchemaError(Exception):
@@ -288,6 +298,113 @@ def validate_audit_entry(entry: dict) -> dict:
             raise SchemaError("Audit entry: 'response_status' must be an integer")
 
     return entry
+
+
+def validate_program_entry(entry: dict) -> dict:
+    """Validate a known-Secur0-program entry. Returns the entry if valid, raises SchemaError if not."""
+    if not isinstance(entry, dict):
+        raise SchemaError(f"Program entry must be a dict, got {type(entry).__name__}")
+
+    _check_required(entry, PROGRAM_REQUIRED, "Program entry")
+    _check_unknown_fields(entry, PROGRAM_ALL, "Program entry")
+    _check_schema_version(entry)
+    _check_timestamp(entry["first_seen"], "first_seen")
+
+    if not isinstance(entry["platform"], str) or not entry["platform"].strip():
+        raise SchemaError("Program entry: 'platform' must be a non-empty string")
+
+    if not isinstance(entry["handle"], str) or not entry["handle"].strip():
+        raise SchemaError("Program entry: 'handle' must be a non-empty string")
+
+    if "program_type" in entry and entry["program_type"] not in VALID_PROGRAM_TYPES:
+        raise SchemaError(
+            f"Program entry: 'program_type' must be one of {sorted(VALID_PROGRAM_TYPES)}, got {entry['program_type']!r}"
+        )
+
+    if "has_cves" in entry and not isinstance(entry["has_cves"], bool):
+        raise SchemaError("Program entry: 'has_cves' must be a boolean")
+
+    return entry
+
+
+def make_program_entry(
+    platform: str,
+    handle: str,
+    name: str | None = None,
+    url: str | None = None,
+    program_type: str | None = None,
+    has_cves: bool | None = None,
+) -> dict:
+    """Create and validate a new known-program entry with current timestamp."""
+    entry = {
+        "platform": platform,
+        "handle": handle,
+        "first_seen": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "schema_version": CURRENT_SCHEMA_VERSION,
+    }
+    if name is not None:
+        entry["name"] = name
+    if url is not None:
+        entry["url"] = url
+    if program_type is not None:
+        entry["program_type"] = program_type
+    if has_cves is not None:
+        entry["has_cves"] = has_cves
+
+    return validate_program_entry(entry)
+
+
+def validate_pending_submission_entry(entry: dict) -> dict:
+    """Validate a pending-submission queue entry. Returns the entry if valid, raises SchemaError if not."""
+    if not isinstance(entry, dict):
+        raise SchemaError(f"Pending submission entry must be a dict, got {type(entry).__name__}")
+
+    _check_required(entry, PENDING_SUBMISSION_REQUIRED, "Pending submission entry")
+    _check_unknown_fields(entry, PENDING_SUBMISSION_ALL, "Pending submission entry")
+    _check_schema_version(entry)
+    _check_timestamp(entry["created"], "created")
+
+    if not isinstance(entry["id"], str) or not entry["id"].strip():
+        raise SchemaError("Pending submission entry: 'id' must be a non-empty string")
+
+    if not isinstance(entry["target"], str) or not entry["target"].strip():
+        raise SchemaError("Pending submission entry: 'target' must be a non-empty string")
+
+    if not isinstance(entry["report_path"], str) or not entry["report_path"].strip():
+        raise SchemaError("Pending submission entry: 'report_path' must be a non-empty string")
+
+    if entry["status"] not in VALID_PENDING_STATUSES:
+        raise SchemaError(
+            f"Pending submission entry: 'status' must be one of {sorted(VALID_PENDING_STATUSES)}, got {entry['status']!r}"
+        )
+
+    if "submitted_at" in entry:
+        _check_timestamp(entry["submitted_at"], "submitted_at")
+
+    return entry
+
+
+def make_pending_submission_entry(
+    id: str,
+    target: str,
+    finding_title: str,
+    report_path: str,
+    notes: str | None = None,
+) -> dict:
+    """Create and validate a new pending-submission entry with current timestamp, status='pending'."""
+    entry = {
+        "id": id,
+        "target": target,
+        "finding_title": finding_title,
+        "report_path": report_path,
+        "created": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "status": "pending",
+        "schema_version": CURRENT_SCHEMA_VERSION,
+    }
+    if notes is not None:
+        entry["notes"] = notes
+
+    return validate_pending_submission_entry(entry)
 
 
 def make_session_summary_entry(
