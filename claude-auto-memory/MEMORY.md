@@ -1,0 +1,74 @@
+- [Claude-BugHunter skill mix](reference_claude_bughunter_mix.md) — 74 extra skills merged into ~/.claude/skills/ (2026-08-12), skills-only, no commands installed.
+- [Privy hunt state](project_privy_hackerone.md) — PAUSED 2026-08-14. shamir-secret-sharing regression found (confirmed real, not submittable — see feedback_no_hypothesis_poc). Client SDKs are minified, postMessage bugs OOS. Resume via doc-gap angle or pivot.
+- [Kubernetes hunt state](project_kubernetes_hackerone.md) — git-sync RCE report + video BOTH DONE, 9.9 Critical, ready to submit as-is.
+- [Shopify hunt state](project_shopify_hackerone.md) — active 2026-08-14, HackerOne, focus on github.com/Shopify/* (Source code, Medium, Eligible). Never test live merchant stores — disqualification risk.
+- [No-hypothesis PoC bar](feedback_no_hypothesis_poc.md) — reports need fully demonstrated, non-hypothetical impact; formal/statistical proof alone isn't enough if real exploitability can't be shown.
+- [YesWeHack Dojo #53 solved](project_yeswehack_dojo53.md) — mail-parser-differential + ERB SSTI chain, FLAG{Hack3rs_Wann4_Be_Hack3rs}, write-up in findings/.
+- [Repsol hunt state](project_repsol.md) — active 2026-08-12, huge multinational energy scope (~90 assets). Standout: pro.waylet.com payment wallet API.
+- [viseron hunt state](project_viseron.md) — 4 findings SUBMITTED (XFF bypass, TOCTOU race, WS leak, IDOR). Pattern: bulk endpoints skip single-camera scoping.
+- [HackerOne technique corpus](reference_h1_technique_corpus.md) — 230 disclosed reports in memory/h1_technique_corpus/*.jsonl; tools/h1_technique_corpus.py grows it.
+- [Autonomous hunting](feedback_autonomous_hunting.md) — don't pause for confirmation mid-pipeline once hunting is greenlit; keep going until a finding surfaces.
+- [Demonstrable impact + third-party filter](feedback_demonstrable_impact_third_party_filter.md) — before submitting a parked finding, gate on real demonstrated impact + a real third-party victim.
+- [Confirm before submit: python-garminconnect](feedback_confirm_before_submit_garminconnect.md) — this target only: show draft, wait for go-ahead before secur0_api.py submit.
+- [script-server hunt state](project_script_server.md) — 1 CRITICAL SUBMITTED (3153 arbitrary file write via upload filename), 7 hypotheses correctly killed.
+- [CLEAR session state](project_clear_session_state.md) — 2 findings SUBMITTED, unsolved real-ID problem, WAF block, Salesforce Aura notes.
+- [User H1 username](user_h1_username.md) — hacker handle is "gueco"; use for X-HackerOne-Researcher header and hacker email aliases.
+- [Respond in Spanish](feedback_respond_in_spanish.md) — always answer this user in Spanish.
+- [Coupang TW hunt state](project_coupang_tw.md) — PAUSED, gueco@imnotahacker.com test email; next step is authenticated cart/checkout via Burp.
+- [OneDoc (YWH) hunt state](project_onedoc_ywh.md) — Swiss healthcare, api.onedoc.ch Critical scope. Rules: fake doctor only, no PII, 5 req/s cap, no post-auth abuse.
+- [Las Rozas Innova hunt state](project_lasrozasinnova.md) — PAUSED, Grafana auth-bypass (no data) + admin-cli ROPC found.
+- [Gestionominegocio hunt state](project_gestionominegocio.md) — PAUSED, VDP preprod only. 10 findings SUBMITTED (profiler leak Critical, price/IVA/retención tampering, CSRF, race, enum, quota bypass). invoiced-albaran-editable parked by design.
+- [recon_engine.sh org auto-detect bug](project_reconengine_orgbug.md) — Phase 8 CI/CD scan hits any github.com/<org> in crawl data, no relevance filter. Fix deferred.
+- [Verify before confirming](feedback_verify_before_confirming.md) — never report a finding confirmed off an API's 200/success alone; check the real downstream value.
+- [Secur0 report structure](feedback_secur0_report_structure.md) — exact 11-field form (Título/Alcance/Endpoint/Detalle técnico/Payload/Impacto/PoC/CVSS/Adjuntos/Info+Fix/Colaboradores).
+- [Verify against live target](feedback_verify_against_live_target.md) — never submit from a local checkout alone; config-dependent bugs caused 2 false positives (1 retracted, #2307).
+- [Shi Shang App hunt state](project_shishang_app.md) — 13 findings SUBMITTED. #2440 downgraded, pushback drafted. Resume: closed-hours bypass + WS correlation.
+- [edge-python hunt state](project_edgepython.md) — 4 findings SUBMITTED, most severe a real compiler miscompile (ternary-as-binop-operand drops the operation).
+- [Third-party tokens out of scope](feedback_third_party_tokens_out_of_scope.md) — never use a live credential for a service outside the program's scope, even with permission.
+- [nano-ffmpeg hunt state](project_nanoffmpeg.md) — 3 findings SUBMITTED via Secur0, 0/6 historical acceptance rate.
+- [Krossbow hunt state](project_krossbow.md) — 1 WebSocket-leak finding SUBMITTED, 1 hypothesis disproven via real broker test.
+- [Report merge rule](feedback_report_merge_rule.md) — merge new findings into an existing draft only if the fix is identical; different endpoint+fix = separate report.
+- [ikpy hunt state](project_ikpy.md) — 4 findings SUBMITTED: JSON path traversal, MJCF recursion DoS, undisclosed telemetry on every import.
+- [chezmoi hunt state](project_chezmoi.md) — 9 findings SUBMITTED, most severe: `chezmoi init` alone exfiltrates local files via config template. Isolate XDG_*/$HOME when testing.
+- [Verify "Fixed" closures before trusting them](feedback_verify_fixed_closures.md) — cheaply check the actual fix commit before moving on; a cited commit can patch the wrong sibling function.
+- [Secur0 API pipeline](reference_secur0_api_pipeline.md) — tools/secur0_api.py + secur0_watch_and_hunt.sh; never login myself; submit always needs explicit "sí".
+- [Don't auto-revert PoCs](feedback_dont_auto_revert_pocs.md) — after confirming a live finding, ask before reverting test data; user may want to screenshot it first.
+- [Report language by program](feedback_report_language_by_program.md) — write report content in the program's own language; chat replies always stay Spanish.
+- [No informational reports](feedback_no_informational_reports.md) — don't draft/submit findings that score pure Informational under CVSS 4.0 unless chained into real impact.
+- [living4football hunt state](project_living4football.md) — test account exists, several surfaces closed clean, progress-falsification + enum parked (no CVSS impact).
+- [Real CSRF cross-origin proof](feedback_real_csrf_cross_origin_proof.md) — don't claim CSRF works from same-origin fetch(); build a real cross-origin PoC or drop it.
+- [Fresh test data](feedback_fresh_test_data.md) — re-verify on a freshly created record, not a leftover from an earlier test batch (caused a full retraction once).
+- [findings/dia2 folder](feedback_findings_dia2_folder.md) — new draft reports go in findings/dia2/, not dia1/.
+- [agentic-awesome-skills hunt state](project_agentic_awesome_skills.md) — #3308 SUBMITTED: committed Supabase RLS fix never deployed to prod, live anon INSERT/UPDATE confirmed.
+- [Reproducibility ≠ severity](feedback_reproducibility_not_severity.md) — a well-evidenced, reproduced bug isn't automatically a security finding; the trust-boundary question is decisive.
+- [kubereq & flame_k8s_backend hunt state](project_kubereq.md) — 5 findings SUBMITTED after an earlier pass wrongly concluded "nothing exploitable."
+- [Check dashboard, not memory](feedback_check_dashboard_not_memory.md) — always verify submission status on the actual Secur0 dashboard before trusting a memory note.
+- [go-ios hunt state](project_go_ios.md) — CLOSED, all 22 findings SUBMITTED across 17 vuln classes, 2 parked informational/low by design.
+- [NaxusAI hunt state](project_naxusai.md) — active, fresh VDP (0 reports), AI vuln-hunting SaaS, web/infra scope, no brute-force allowed.
+- [kinopio-client hunt state](project_kinopio_client.md) — 9 findings SUBMITTED incl. websocket dispatch (Critical), clickjacking chain, apiKey printed to console (new vuln class).
+- [sodapy hunt state](project_sodapy.md) — 7 findings SUBMITTED: filesystem path traversal (Critical), delete(row_id=0) wipes dataset, URL redirect confused-deputy, app_token leak on cross-domain redirect (new vuln class).
+- [Demonstrate, don't ask about overlap](feedback_demonstrate_dont_ask_overlap.md) — when a finding overlaps a submitted one, build a real PoC and submit if it holds.
+- ["otra cosa" = same program](feedback_otra_cosa_same_program.md) — means a different bug/angle on the current target; only switch on an explicitly named new target.
+- [No meta-references in reports](feedback_no_meta_references_in_reports.md) — never quote the user's chat instructions inside a report; write as if investigated independently.
+- [cogny hunt state](project_cogny.md) — 15 findings SUBMITTED incl. two same-day fix bypasses (share_status, attachment path-reuse). Single shared vault, Spanish reports.
+- [Autofac hunt state](project_autofac.md) — all 5 findings SUBMITTED: StackOverflow DoS, override bypass, leaked NuGet publish secret, leaked real Autofac.snk key.
+- [boost-iosx hunt state](project_boost_iosx.md) — first 8 closed Informative (CI-only precondition). Reopened: CocoaPods prepare_command hits real consumers, 3309 SUBMITTED.
+- [BoomingMusic hunt state](project_boomingmusic.md) — 2 findings SUBMITTED (ReDoS w/ real MP3 PoC, exported ErrorActivity injection); traversal disproven, crash ruled too low-severity.
+- [TheHackersLabs-Academy hunt state](project_thehackerslabs.md) — VDP "The Hackers Labs". 1 gap SUBMITTED (3310 point-farming); Stripe webhook near-miss safely verified false.
+- [Never assume, always confirm](feedback_never_assume_confirm_always.md) — hypothetical preconditions must be verified against the real target before scoring/drafting, never left as an "if".
+- [Don't test via live API](feedback_dont_test_via_live_api.md) — never debug a submission error with dummy payloads against a real program's live create-report endpoint; fix locally first.
+- [CodeWeaver hunt state](project_codeweaver.md) — all 10 findings SUBMITTED (symlink r/w, ignore-dir bypass, prompt injection, OOM/DoS crashes). GitHub issue/PR mining unusually productive.
+- [Hunt save-don't-submit mode](feedback_hunt_save_dont_submit_mode.md) — ENDED 2026-08-08, superseded by [[feedback_submit_everything_now]]. Kept for historical context only.
+- [Program queue](project_program_queue.md) — 2026-08-05/06 backlog notes: whatstk (clean, no finding), Futura Tickets (SUBMITTED #3592 SSRF→GCP token), Prospero Flow CRM/Sippts/MailerUp/Pentestify still pending.
+- [Peercoin hunt state](project_peercoin.md) — 3 findings DRAFTED+PARKED (coinstake OOB read, unbounded mapPoSTemperature DoS, block-msg null-deref); a 4th killed, no live impact.
+- [Prowler hunt state](project_prowler.md) — api/ backend clean (best SSRF hardening seen). 1 finding DRAFTED+PARKED: CSV/Formula injection across main + compliance CSV exports.
+- [Raylib hunt state](project_raylib.md) — 1 finding DRAFTED+PARKED: heap over-read + real SIGSEGV in LoadModel()/LoadIQM() via crafted .iqm, double-PoC'd. Most of codebase unreviewed.
+- [Ecommerce Template hunt state](project_ecommerce_template.md) — 1 finding DRAFTED+PARKED: unauthenticated Stripe checkout session disclosure (PII+payment) via public success_url. Cart/wishlist RLS solid.
+- [python-garminconnect hunt state](project_python_garminconnect.md) — maintainer pushes fixes fast. #3947/3948/3950 (token_file_path symlink, all 3 callers) SUBMITTED and now genuinely fixed. Full audit otherwise clean.
+- [Fuzzer must exclude auth methods](feedback_fuzzer_exclude_auth_methods.md) — hard-exclude login/logout before auto-fuzzing, mock every HTTP stack the library uses, not just one.
+- [Scope pkill by port, not name](feedback_scope_pkill_by_port.md) — never `pkill -f` a generic command name on a shared sandbox; kill by exact PID or port-scoped pattern.
+- [CrystalReportsRunner hunt state](project_crystalreportsrunner.md) — 3 findings DRAFTED+PARKED: named-pipe no ACL leaks DB creds, unsafe Type.GetType() deserialization, pipe squatting. None live-verified (no Windows env).
+- [add-and-commit hunt state](project_add_and_commit.md) — 2 findings SUBMITTED: git-flag abbreviation RCE (3919), unpinned actions-tagger supply-chain risk (3922). YAML-DoS killed, no real victim.
+- [Secur0 title constraints](feedback_secur0_title_constraints.md) — report title: hard 100-char cap, rejects backticks/em-dash/smart quotes; check before submit.
+- [Submit everything from now on](feedback_submit_everything_now.md) — 2026-08-08: user ended save-don't-submit mode, submit every finding going forward.
+- [Needs a real victim](feedback_needs_real_victim.md) — a DoS/impact finding needs a plausible attacker-controlled path, not just "if someone puts a weird value there"; self-inflicted isn't reportable.
