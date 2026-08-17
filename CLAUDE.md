@@ -22,6 +22,31 @@ This repo is a Claude Code plugin for professional bug bounty hunting across Hac
 | `skills/cicd-security/` | CI/CD pipeline hunting — GitHub Actions injection, secret exfil, self-hosted runner poisoning, OIDC abuse, supply chain attacks |
 | `skills/graphql-audit/` | GraphQL hunting — introspection, field suggestions (clairvoyance), batching DoS, IDOR via aliasing, injection, auth bypass, depth bombs |
 
+### Extended attack skills (mixed in from Claude-BugHunter, 2026-08-12)
+
+74 additional skills from [elementalsouls/Claude-BugHunter](https://github.com/elementalsouls/Claude-BugHunter)
+are installed at the user level (`~/.claude/skills/`) alongside this project's own 13 — **not**
+vendored into this repo's `skills/` directory, so `install.sh` here is unaffected and a fresh
+clone of this repo won't carry them. Claude-BugHunter itself is built on top of this same
+project's lineage (it vendors 8 of its 82 skills directly from `shuvonsec/claude-bug-bounty`),
+so the two sets are complementary rather than competing. **Only skills were merged — none of
+Claude-BugHunter's 15 slash commands were installed**, because every one of them collides by
+name with a command already listed below (`/recon`, `/hunt`, `/report`, `/triage`, etc.), and
+this project's versions are wired to its own `tools/*.sh` (scope_checker, audit_log,
+lead_board) — installing theirs over ours would have silently broken that integration.
+
+Notable additions: one per-vuln-class `hunt-*` skill for ~50 bug classes not previously broken
+out individually here (`hunt-idor`, `hunt-oauth`, `hunt-ssrf`, `hunt-graphql`, `hunt-jwt-crypto`,
+`hunt-saml`, `hunt-race-condition`, framework-specific ones like `hunt-nextjs`/`hunt-aspnet`/
+`hunt-springboot`/`hunt-laravel`, infra ones like `hunt-k8s`/`hunt-grpc`/`hunt-http-smuggling`),
+plus enterprise-platform attack chains this project didn't previously have coverage for:
+`m365-entra-attack`, `okta-attack`, `vmware-vcenter-attack`, `enterprise-vpn-attack` (Cisco ASA/
+FortiGate/NetScaler/GlobalProtect/Ivanti/F5), `hunt-sharepoint`, `cloud-iam-deep`, plus
+`apk-redteam-pipeline`/`ios-redteam-pipeline`, `offensive-osint`/`osint-methodology`,
+`evidence-hygiene`, `bugcrowd-reporting`, `supply-chain-attack-recon`. Full list loads
+automatically via the Skill tool same as this project's own skills — invoke by name when a
+target matches (e.g. an SSL-VPN appliance or Entra ID tenant on the perimeter).
+
 ### Commands (21 slash commands)
 
 > **Note:** All commands are prefixed to avoid conflicts with Claude Code's built-in commands.
@@ -139,7 +164,7 @@ chmod +x install.sh && ./install.sh
 
 1. READ FULL SCOPE before touching any asset
 2. NEVER hunt theoretical bugs — "Can attacker do this RIGHT NOW?"
-3. Run 7-Question Gate BEFORE writing any report
+3. Run 7-Question Gate BEFORE writing any report. Do this inline with your own Read/Bash/WebFetch, never by delegating to a subagent and trusting its verdict unverified — Agent-tool subagents have been observed to run without real file/network access and fabricate plausible-looking negative results instead of reporting the tool failure (confirmed 2026-08-17). Also apply the 5x verification bar (verify 5+ times, rule out by-design behavior, confirm real vuln, confirm real third-party victim — see `feedback_verification_bar_five_times` memory) and name the OWASP Top 10 category with a one-sentence mechanism-grounded justification. Save the full validation output to `findings/<dir>/submission-notes.md` before writing `report.md` — a report with no submission-notes.md means validation was skipped and the finding isn't ready for anything.
 4. KILL weak findings fast — N/A hurts your validity ratio
 5. 5-minute rule — nothing after 5 min = move on
 6. **LEAD BOARD — never lose a lead.** After recon, run `lead_board.py ingest <target>` + `show`, and route each finding to its `hunt-*` skill in plain language ("GraphQL endpoint → hunt-graphql"). When starting/killing/reporting a lead, `touch` its status. The hunter focuses on one lead at a time; the board remembers the rest so none is forgotten. Surface stale high-priority leads unprompted.

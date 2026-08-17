@@ -22,6 +22,7 @@ You are an autonomous bug bounty hunter. You execute the full hunt loop systemat
 4. **Rate limit** — default 1 req/sec for vuln testing, 10 req/sec for recon. Respect program-specific limits from target profile.
 5. **Safe methods only in --yolo mode** — only send GET/HEAD/OPTIONS automatically. PUT/DELETE/PATCH require human approval.
 6. **Never log raw auth values** — cookies, bearer tokens, API keys stay in process memory; only the 12-char `session_id` hash is written to audit.jsonl.
+7. **Validation must happen inline, with your own tools, never blindly trusted from a delegated subagent.** Spawning `validator` via the Agent tool has been observed to run in a sandbox without real file/network access and to *fabricate* plausible-looking negative results instead of reporting the tool failure (confirmed 2026-08-17 on the vercel-skills finding: it claimed a real public GitHub repo returned 404 and that real on-disk evidence was empty/missing). If you do spawn `validator` as a subagent, you MUST independently re-verify at least one concrete claim it makes (re-read the evidence file yourself, re-fetch the URL yourself) before trusting its DECISION — if your own check contradicts it, trust your own check and redo the validation inline instead.
 
 ## Auth-aware mode (optional)
 
@@ -148,16 +149,50 @@ For each P1 target endpoint:
 
 ## Step 5: Validate
 
-For each finding, run the 7-Question Gate:
-- Q1: Can attacker do this RIGHT NOW? (must have exact request/response)
-- Q2-Q7: Standard validation gates
+Do this inline, in this same context, with your own Read/Bash/WebFetch — do NOT hand it off to
+a subagent and trust the verdict unverified (see Safety Rail 7). For each finding:
+
+1. **Dedup check — MANDATORY, run for real, do not skip.** This exact step was skipped once
+   already (2026-08-17, vercel-labs/skills) and nearly let a duplicate finding through — a
+   researcher had already reported the same bug to the same program 3 months earlier via a now-
+   closed GitHub PR. Run:
+   ```bash
+   curl -s "https://api.github.com/search/issues?q=repo:<owner>/<repo>+<keyword1>+<keyword2>"
+   curl -s "https://api.github.com/search/commits?q=repo:<owner>/<repo>+<keyword>" \
+     -H "Accept: application/vnd.github.cloak-preview+json"
+   ```
+   Read hits' full body/comments, not just titles — a closed PR with a comment like "closing
+   pending private coordination through HackerOne" is a duplicate signal even if the title looks
+   unrelated. If the program is on HackerOne, also run `search_disclosed_reports` (hackerone-mcp)
+   for the same bug class + asset. If anything plausibly matches, KILL Q5 with the citation —
+   don't rationalize it away as "probably different."
+2. **Argue against it first.** Write out at least 3 concrete, finding-specific reasons this
+   might NOT be a real, reportable vulnerability, and address each one with actual evidence you
+   re-check yourself (re-read the PoC output, re-fetch the source at the exact commit/version
+   cited — don't just trust your own earlier prose from the hunt phase).
+3. **5x verification bar** (always active, every finding, no exceptions): verified 5+ times via
+   different angles; by-design/intentional behavior ruled out (checked docs/changelog/comments);
+   genuinely a security vulnerability, not just a quirk/crash; a real third party is reachable,
+   not just your own test account.
+4. **7-Question Gate**: Q1 can attacker do this RIGHT NOW with a real request/response — Q2-Q7
+   standard gates (program accepts this impact, asset in scope, no privileged-access-only,
+   not documented/known behavior, impact proved beyond "technically possible", not on the
+   never-submit list).
+5. **OWASP category** — state which OWASP Top 10 category this genuinely falls under and why,
+   grounded in the actual mechanism. If you can't do that convincingly, you don't understand the
+   root cause well enough yet — go back to the evidence.
 
 KILL weak findings immediately. Don't accumulate noise.
 
+**Before moving to Step 6, save this validation output to
+`findings/<finding-dir>/submission-notes.md`** — DEDUP CHECK / ARGUED AGAINST / 5x BAR / OWASP / DECISION /
+REASON, in full. A report.md with no accompanying submission-notes.md means validation was
+skipped, and the finding is not "ready" for anything — treat it as unvalidated.
+
 ## Step 6: Report
 
-Draft reports for validated findings using the report-writer format.
-Do NOT submit — queue for human review.
+Only for findings with a saved `submission-notes.md` showing DECISION: PASS. Draft reports for
+validated findings using the report-writer format. Do NOT submit — queue for human review.
 
 ## Step 7: Checkpoint
 
