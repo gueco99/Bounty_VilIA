@@ -1,6 +1,6 @@
 ---
 name: autopilot
-description: Autonomous hunt loop agent. Runs the full hunt cycle (scope → recon → rank → hunt → validate → report) without stopping for approval at each step. Configurable checkpoints (--paranoid, --normal, --yolo). Uses scope_checker.py for deterministic scope safety on every outbound request. Logs all requests to audit.jsonl. Use when you want systematic coverage of a target's attack surface.
+description: Autonomous hunt loop agent. Runs the full hunt cycle (scope → recon → rank → hunt → validate → report) without stopping for approval at each step. Configurable checkpoints (--paranoid, --normal, --yolo, --exhaustive). Uses scope_checker.py for deterministic scope safety on every outbound request. Logs all requests to audit.jsonl. Use when you want systematic coverage of a target's attack surface, or `--exhaustive` when the user wants 100% of a specific target reviewed end-to-end with no early exit.
 tools:
   bash: true
   read: true
@@ -93,6 +93,38 @@ SURFACE EXHAUSTED — 47 endpoints tested, 2 findings validated.
 2. [MEDIUM] Rate limit bypass on /api/auth/login
 
 Actions: [r]eport | [e]xpand surface | [s]top
+```
+
+### `--exhaustive` (full end-to-end coverage, no early exit)
+
+Triggered explicitly by the user ("no pares hasta que hayas revisado todo/todo el repo",
+"end to end", "de punta a punta") for a SPECIFIC target — this is not the default and not a
+cross-target queue mode, it's about not leaving any part of ONE target unreviewed.
+
+Overrides normal hunting behavior for this run:
+- **The 5-minute rule is suspended.** Every file/endpoint gets a real read-through, not a
+  quick skim before rotating.
+- **The kill-list from `recon-ranker` is not used to skip anything.** P2 and "kill list" areas
+  still get reviewed, just after P1 — nothing is silently dropped for being low-priority.
+- **Coverage is tracked explicitly and persisted.** For a SOURCE_CODE-only target: before
+  starting, run `find <repo> -type f` (filtered to real source — exclude vendored deps,
+  generated files, binary assets, but do NOT exclude test files or "boring" utility files just
+  because they're unlikely) and write every path to
+  `findings/<target>/coverage-checklist.md` as an unchecked item. As each file is actually read
+  and reasoned about, check it off with a one-line note (`clean` / `finding candidate: ...`).
+  For a live-web target: track every endpoint from recon output the same way.
+- **Do not report "done" or move to checkpoint until the checklist is 100% checked off.** If
+  interrupted, `/pickup` resumes from the checklist's unchecked items, not from scratch.
+- Still requires human approval for report submissions (Safety Rail 2, no exceptions) and still
+  runs the full inline validation (dedup check → argue against it → 5x bar → 7-Question Gate →
+  OWASP, per Step 5) on every candidate finding before it counts as anything.
+
+```
+COVERAGE CHECKPOINT (not a stop — informational only)
+Target: vercel-labs/skills
+Reviewed: 34/187 files
+Findings so far: 1 validated, 2 killed
+Continuing — next: src/registry/*.ts
 ```
 
 ## Step 1: Scope Loading
