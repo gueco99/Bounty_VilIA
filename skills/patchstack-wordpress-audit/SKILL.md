@@ -34,23 +34,32 @@ description: WordPress plugin/theme vulnerability hunting for the Patchstack All
 
 ## 2. Where to Source Targets
 
-Two productive strategies, in order of hit rate:
+**No curated target list exists — there is no dashboard/portal listing in-scope plugins.**
+Scope is the entire WordPress.org ecosystem (plus premium plugins/themes, GitHub-hosted, and
+vendor-site-hosted components); researchers pick targets themselves. Real eligibility
+thresholds (confirmed against the current guidelines, verify they haven't moved before relying
+on them):
+- **1,000+ active installs** (exceptions exist for premium products and the mVDP program)
+- **Updated within the last 3 years** — abandoned/stale plugins don't qualify
+- Publicly available (wordpress.org, vendor site, GitHub, etc.)
+
+Two productive sourcing strategies, in order of hit rate:
 
 1. **wordpress.org SVN + changelog diffing** (same "recently-patched-code review" pattern used
-   elsewhere this project — highest signal-to-noise). Every plugin's SVN repo
-   (`plugins.svn.wordpress.org/<slug>/`) has full version history. Pick a plugin with 10k+
-   active installs (worth a real CVE), diff the last 2-3 tagged versions, and read the
-   changelog for words like "security fix", "sanitization", "escaping", "permission" — then
-   check whether the SAME pattern exists elsewhere in the codebase, unfixed (the sibling-
-   function trap — a fix in one function rarely gets applied everywhere the same bug exists).
-2. **Fresh/recently-updated plugins with real install counts, never audited before** — browse
-   wordpress.org's "recently updated" or "newest" listings, filter for install count > 1,000
-   (worth a CVE) but low review/audit visibility (less picked-over than the top 100 plugins
-   everyone already hunts).
+   elsewhere this project — highest signal-to-noise). Browse
+   `wordpress.org/plugins/browse/updated/` for recently-touched plugins meeting the 1,000+
+   install bar, then pull the SVN history (`plugins.svn.wordpress.org/<slug>/`), diff the last
+   2-3 tagged versions, and read the changelog for words like "security fix", "sanitization",
+   "escaping", "permission" — then check whether the SAME pattern exists elsewhere in the
+   codebase, unfixed (the sibling-function trap — a fix in one function rarely gets applied
+   everywhere the same bug exists).
+2. **`wordpress.org/plugins/browse/popular/`** for well-installed plugins, filtered toward ones
+   with less audit visibility than the top 20-30 everyone already hunts.
 
-Avoid: plugins with < 100 active installs (usually not worth a CVE to Patchstack), and plugins
-already flagged with an open, unfixed CVE from another researcher (dedup risk — check the
-plugin's own changelog and wpscan.com/wordpress/plugins/<slug> first).
+Avoid: plugins under the 1,000-install bar or not updated in 3+ years (both make the report
+ineligible regardless of the bug's quality), and plugins already flagged with an open, unfixed
+CVE from another researcher (dedup risk — check the plugin's own changelog and
+wpscan.com/wordpress/plugins/<slug> first).
 
 ## 3. The 8 Recurring Vuln Patterns (read for these first, in order of hit rate)
 
