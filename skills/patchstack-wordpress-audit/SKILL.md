@@ -1,6 +1,6 @@
 ---
 name: patchstack-wordpress-audit
-description: WordPress plugin/theme vulnerability hunting for the Patchstack Alliance bug bounty program — scope rules (contributor role excluded since June 2026), reward/level mechanics, the 8 recurring vuln patterns behind most paid WP plugin CVEs (missing nonce/capability checks, unauthenticated AJAX handlers, $wpdb SQLi, missing esc_*() output escaping, REST API permission_callback gaps, PHP object injection via unserialize(), arbitrary options/user-meta update, IDOR via post/user IDs), where to source targets (wordpress.org SVN + changelog diffing), and the researcher-portal submission mechanics. Use when hunting WordPress plugins/themes specifically, or when told to focus on Patchstack.
+description: WordPress plugin/theme vulnerability hunting for the Patchstack Alliance bug bounty program — scope rules (contributor role excluded since June 2026), the two separate payout tracks (monthly leaderboard top-5 $500-$2000 for standard reports vs. independent zero-day bounties up to $33,000 by install-count/auth-level), no researcher certificates, CNA-guaranteed CVE process, the 8 recurring vuln patterns behind most paid WP plugin CVEs (missing nonce/capability checks, unauthenticated AJAX handlers, $wpdb SQLi, missing esc_*() output escaping, REST API permission_callback gaps, PHP object injection via unserialize(), arbitrary options/user-meta update, IDOR via post/user IDs), where to source targets (wordpress.org SVN + changelog diffing, 1000+ install / updated-within-3-years eligibility bar), and submission mechanics. Use when hunting WordPress plugins/themes specifically, or when told to focus on Patchstack.
 ---
 
 # PATCHSTACK ALLIANCE — WordPress Plugin/Theme Bug Bounty
@@ -18,10 +18,56 @@ description: WordPress plugin/theme vulnerability hunting for the Patchstack All
   free (wordpress.org repo) and premium plugins/themes are eligible. For premium components,
   the report must include the original, unmodified archive file for the triager to validate
   against — don't submit against a cracked/modified copy.
-- **Payout model is hybrid**: a monthly leaderboard (points-based competition) PLUS individual
-  per-vulnerability zero-day bounties for qualifying CVSS bands (SQLi: $75 @ CVSS 8.x, $100 @
-  CVSS 9.x, $150 @ CVSS 10 — check current rates, these move). A level system (1→10) unlocks
-  cumulative rewards up to ~$5,737 total, plus two "mystery box" unlocks at level 5 and 10.
+- **Payout model is two separate tracks — don't conflate them:**
+  1. **Standard reports** pay ONLY via the monthly leaderboard top 5 (see §1.1) — a valid
+     report earns XP/points, but XP alone pays nothing if you don't place top 5 that month.
+  2. **Zeroday reports** (full site compromise, working exploit, no unusual prerequisites) pay
+     **directly, independent of the leaderboard**, scaled by the plugin's active install count
+     and whether exploitation needs authentication (see §1.2 table) — verified against the
+     current guidelines 2026-08-18, cross-checked twice since the numbers materially change the
+     value proposition (a 15M+-install or WP-Core unauthenticated 0day pays **$33,000**, not a
+     minor side-bounty).
+  3. A level system (1→10) also exists layered on top, unlocking cumulative rewards — total
+     unlock value and exact mechanics weren't independently re-verified this pass; treat the
+     ~$5,737 figure from an earlier pass as unconfirmed until re-checked.
+  4. **No certificates are issued to researchers.** ("SOC 2"/"ISO 27001 certified" badges on
+     Patchstack's own site refer to Patchstack's own compliance certifications, not anything
+     given to researchers — don't expect a researcher certificate from this program.)
+
+### 1.1 Monthly Leaderboard (standard reports)
+| Rank | Payout |
+|---|---|
+| 1st | $2,000 |
+| 2nd | $1,400 |
+| 3rd | $800 |
+| 4th | $600 |
+| 5th | $500 |
+
+Resets on the calendar month, UTC (00:00 on the 1st → 23:59 on the last day). Results are
+published only once the full month's backlog of reports is validated (can take up to another
+month if there's a backlog). Guaranteed minimum monthly pool: **$5,300**. Ranking below top 5
+= no direct cash for that report, regardless of how many valid reports you filed.
+
+### 1.2 Zeroday Bounty Scale (separate track, pays regardless of leaderboard rank)
+| Active installs | Unauthenticated | Subscriber/Customer |
+|---|---|---|
+| 1,000+ | $250 | $125 |
+| 5,000+ | $400 | $200 |
+| 10,000+ | $600 | $300 |
+| 50,000+ | $1,400 | $700 |
+| 100,000+ | $2,600 | $1,300 |
+| 500,000+ | $4,900 | $2,450 |
+| 1,000,000+ | $7,200 | $3,600 |
+| 5,000,000+ | $14,400 | $7,200 |
+| 15,000,000+ or WordPress Core | $33,000 | $16,500 |
+
+### 1.3 CVE Process
+Patchstack is itself a **CVE Numbering Authority (CNA)**. Every valid, in-scope, non-duplicate
+report gets a CVE ID published in the researcher's name — Patchstack initiates it, researchers
+don't request it. **No fixed SLA/timeframe is published** for how long assignment takes
+(delays happen to avoid ID conflicts with other CNAs). On duplicates, the CVE goes to whoever's
+report was valid first; later reports of the same bug are rejected — reinforces why the dedup
+check in §5 step 4 matters here more than on most platforms.
 - **Scope narrowed 2026-06-01: the `contributor` role is no longer in scope.** A finding that
   requires the attacker to already hold `contributor` capability doesn't qualify anymore — the
   attacker must start from `guest` (unauthenticated), `subscriber`, `customer`, or a custom role,
