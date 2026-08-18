@@ -1,10 +1,10 @@
 # Claude Bug Bounty — Plugin Guide
 
-This repo is a Claude Code plugin for professional bug bounty hunting across HackerOne, Bugcrowd, Intigriti, and Immunefi.
+This repo is a Claude Code plugin for professional bug bounty hunting across HackerOne, Bugcrowd, Intigriti, Immunefi, and Patchstack Alliance.
 
 ## What's Here
 
-### Skills (10 domains — load with `/bug-bounty`, `/web2-recon`, `/token-scan`, etc.)
+### Skills (11 domains — load with `/bug-bounty`, `/web2-recon`, `/token-scan`, etc.)
 
 | Skill | Domain |
 |---|---|
@@ -21,6 +21,7 @@ This repo is a Claude Code plugin for professional bug bounty hunting across Hac
 | `skills/mobile-pentest/` | Android/iOS app pentest — runtime-first proxy workflow, APK/IPA decompile for hidden endpoints + secrets, deeplink/exported-activity injection, WebView bridge, SSL pinning bypass |
 | `skills/cicd-security/` | CI/CD pipeline hunting — GitHub Actions injection, secret exfil, self-hosted runner poisoning, OIDC abuse, supply chain attacks |
 | `skills/graphql-audit/` | GraphQL hunting — introspection, field suggestions (clairvoyance), batching DoS, IDOR via aliasing, injection, auth bypass, depth bombs |
+| `skills/patchstack-wordpress-audit/` | WordPress plugin/theme hunting for Patchstack Alliance — 8 recurring vuln patterns (nonce/capability gaps, unauth AJAX, $wpdb SQLi, missing esc_*, REST permission_callback gaps, PHP object injection, arbitrary options/meta update, IDOR), SVN/changelog target sourcing, contributor-role scope exclusion (2026-06) |
 
 ### Extended attack skills (mixed in from Claude-BugHunter, 2026-08-12)
 
